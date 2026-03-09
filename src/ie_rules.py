@@ -66,7 +66,7 @@ def extract_locations(text: str) -> list[dict]:
         # Анти-правило: (?<!Потяг \S{0,10} ) та (?<!трасі ) щоб відсікти маршрути
         pattern = rf'(?<!Потяг )\b{loc}\b(?! -)'
         for match in re.finditer(pattern, text, re.IGNORECASE):
-            # Проста перевірка контексту (якщо перед містом є "траса" або "маршрут" - пропускаємо)
+            # Проста перевірка контексту
             context_before = text[max(0, match.start()-15):match.start()].lower()
             if "трас" in context_before or "маршрут" in context_before or "потяг" in context_before:
                 continue
@@ -80,3 +80,6 @@ def extract_locations(text: str) -> list[dict]:
                 "method": "dict_locations_filtered"
             })
     return results
+
+def extract_all(text: str) -> list[dict]:
+    return extract_dates(text) + extract_amounts(text) + extract_locations(text)
