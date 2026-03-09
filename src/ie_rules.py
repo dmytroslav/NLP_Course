@@ -19,25 +19,28 @@ def load_resources():
 LOCATIONS_DICT, CURRENCIES_DICT = load_resources()
 
 def extract_dates(text: str) -> list[dict]:
-    # Шукаємо формати DD.MM.YYYY
-    pattern = r'\b(\d{2})\.(\d{2})\.(\d{4})\b'
+    # Оновлено: шукаємо формати DD.MM.YYYY та DD.MM.YY
+    pattern = r'\b(\d{2})\.(\d{2})\.(\d{2,4})\b'
     results = []
     for match in re.finditer(pattern, text):
         raw_val = match.group(0)
-        norm_val = f"{match.group(3)}-{match.group(2)}-{match.group(1)}" # Нормалізація YYYY-MM-DD
+        year = match.group(3)
+        if len(year) == 2:
+            year = "20" + year # Проста нормалізація для 2020-х
+        norm_val = f"{year}-{match.group(2)}-{match.group(1)}"
         results.append({
             "field_type": "DATE",
             "value": norm_val,
             "raw_value": raw_val,
             "start_char": match.start(),
             "end_char": match.end(),
-            "method": "regex_dd_mm_yyyy"
+            "method": "regex_date_extended"
         })
     return results
 
 def extract_amounts(text: str) -> list[dict]:
-    # Шукаємо суми (напр., "100 тис грн", "50 млн доларів")
-    pattern = r'\b(\d+[.,]?\d*)\s*(тис|млн|млрд)?\.?\s*(грн|гривень|дол|доларів|євро|\$|₴)\b'
+    # Анти-правило: (?!\s*/\s*[а-яa-z]+) відсікає те, що йде після слешу (наприклад, /л, /кг)
+    pattern = r'\b(\d+[.,]?\d*)\s*(тис|млн|млрд)?\.?\s*(грн|гривень|дол|доларів|євро|\$|₴)\b(?!\s*/\s*[а-яa-z]+)'
     results = []
     for match in re.finditer(pattern, text, re.IGNORECASE):
         raw_val = match.group(0)
@@ -45,34 +48,35 @@ def extract_amounts(text: str) -> list[dict]:
         multiplier = match.group(2)
         curr_raw = match.group(3).lower()
         
-        # Нормалізація валюти
         norm_curr = CURRENCIES_DICT.get(curr_raw, "UNKNOWN")
         
         results.append({
             "field_type": "AMOUNT",
-            "value": f"{num_part} {multiplier if multiplier else ''} {norm_curr}".strip(),
+            "value": f"{num_part} {multiplier if multiplier else ''} {norm_curr}".strip().replace("  ", " "),
             "raw_value": raw_val,
             "start_char": match.start(),
             "end_char": match.end(),
-            "method": "regex_amount_with_currency"
+            "method": "regex_amount_no_rates"
         })
     return results
 
 def extract_locations(text: str) -> list[dict]:
     results = []
     for loc in LOCATIONS_DICT:
-        # Шукаємо точний збіг слова
-        pattern = rf'\b{loc}\b'
+        # Анти-правило: (?<!Потяг \S{0,10} ) та (?<!трасі ) щоб відсікти маршрути
+        pattern = rf'(?<!Потяг )\b{loc}\b(?! -)'
         for match in re.finditer(pattern, text, re.IGNORECASE):
+            # Проста перевірка контексту (якщо перед містом є "траса" або "маршрут" - пропускаємо)
+            context_before = text[max(0, match.start()-15):match.start()].lower()
+            if "трас" in context_before or "маршрут" in context_before or "потяг" in context_before:
+                continue
+                
             results.append({
                 "field_type": "LOCATION",
-                "value": loc, # Нормалізовано до словника
+                "value": loc,
                 "raw_value": match.group(0),
                 "start_char": match.start(),
                 "end_char": match.end(),
-                "method": "dict_locations_ua"
+                "method": "dict_locations_filtered"
             })
     return results
-
-def extract_all(text: str) -> list[dict]:
-    return extract_dates(text) + extract_amounts(text) + extract_locations(text)
