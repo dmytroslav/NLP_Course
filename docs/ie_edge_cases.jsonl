@@ -1,0 +1,3 @@
+{"id": 1, "raw_text": "Це сталося 01.01.2023.", "field_type": "DATE", "expected_behavior": "Витягнути 2023-01-01"}
+{"id": 2, "raw_text": "Бюджет 100% не гумовий.", "field_type": "AMOUNT", "expected_behavior": "Ігнорувати, бо це відсотки, а не сума з валютою"}
+{"id": 3, "raw_text": "Ворог відступив від міста Київ.", "field_type": "LOCATION", "expected_behavior": "Витягнути Київ через dict_locations_ua"}

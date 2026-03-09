@@ -1,0 +1,21 @@
+{"id": 1, "raw_text": "Це сталося 01.01.2023.", "field_type": "DATE", "expected_behavior": "Витягнути 2023-01-01"}
+{"id": 2, "raw_text": "Бюджет 100% не гумовий.", "field_type": "AMOUNT", "expected_behavior": "Ігнорувати, бо це відсотки, а не сума"}
+{"id": 3, "raw_text": "Ворог відступив від міста Київ.", "field_type": "LOCATION", "expected_behavior": "Витягнути Київ через словник"}
+{"id": 4, "raw_text": "Ціна зросла до 50 грн/л.", "field_type": "AMOUNT", "expected_behavior": "Ігнорувати, спрацьовує анти-правило на тарифи (грн/л)"}
+{"id": 5, "raw_text": "Потяг №43 Київ - Львів скасовано.", "field_type": "LOCATION", "expected_behavior": "Ігнорувати Київ, бо це частина маршруту потяга"}
+{"id": 6, "raw_text": "На трасі Бахмут - Лисичанськ затори.", "field_type": "LOCATION", "expected_behavior": "Ігнорувати Бахмут, бо це частина назви траси"}
+{"id": 7, "raw_text": "Виділено 10 млрд євро допомоги.", "field_type": "AMOUNT", "expected_behavior": "Витягнути 10 млрд EUR"}
+{"id": 8, "raw_text": "ТЦ Кримський закрили.", "field_type": "LOCATION", "expected_behavior": "Ігнорувати, бо це частина іншого слова (назва ТЦ)"}
+{"id": 9, "raw_text": "Подія відбудеться 1.2.22.", "field_type": "DATE", "expected_behavior": "Ігнорувати, формат вимагає DD.MM.YYYY або DD.MM.YY"}
+{"id": 10, "raw_text": "Витрати склали $500.", "field_type": "AMOUNT", "expected_behavior": "Витягнути 500 USD"}
+{"id": 11, "raw_text": "Близько 200 тис військових.", "field_type": "AMOUNT", "expected_behavior": "Ігнорувати, бо немає валюти"}
+{"id": 12, "raw_text": "Зустріч у 2022 році.", "field_type": "DATE", "expected_behavior": "Ігнорувати, лише рік без місяця і дня"}
+{"id": 13, "raw_text": "Впав у річку Дніпро.", "field_type": "LOCATION", "expected_behavior": "Витягне Дніпро (допустиме FP без NER)"}
+{"id": 14, "raw_text": "Зібрали 100 000 гривень.", "field_type": "AMOUNT", "expected_behavior": "Витягнути 100 000 UAH"}
+{"id": 15, "raw_text": "Звільнено Херсон.", "field_type": "LOCATION", "expected_behavior": "Витягнути Херсон"}
+{"id": 16, "raw_text": "Дані від 24 лютого.", "field_type": "DATE", "expected_behavior": "Ігнорувати, бо місяць написаний текстом (поки що)"}
+{"id": 17, "raw_text": "Коштує 50 ₴.", "field_type": "AMOUNT", "expected_behavior": "Витягнути 50 UAH"}
+{"id": 18, "raw_text": "Донецьк під обстрілом.", "field_type": "LOCATION", "expected_behavior": "Витягнути Донецьк"}
+{"id": 19, "raw_text": "Вартість 10.5 тис дол.", "field_type": "AMOUNT", "expected_behavior": "Витягнути 10.5 тис USD"}
+{"id": 20, "raw_text": "Дата: 15.05.24", "field_type": "DATE", "expected_behavior": "Витягнути 2024-05-15"}
+{"id": 21, "raw_text": "Маршрут Одеса - Миколаїв.", "field_type": "LOCATION", "expected_behavior": "Ігнорувати Одеса через анти-правило маршруту"}

@@ -1,0 +1,30 @@
+{"text_id": 1, "text": "Так виглядає Маріуполь після багатоденного обстрілу", "field_type": "LOCATION", "span_text": "Маріуполь", "start_char": 13, "end_char": 22, "normalized_value": "Маріуполь"}
+{"text_id": 2, "text": "Контрнаступ ЗСУ на Маріуполь буде 101%, - Арестович", "field_type": "LOCATION", "span_text": "Маріуполь", "start_char": 19, "end_char": 28, "normalized_value": "Маріуполь"}
+{"text_id": 3, "text": "Київ та Гамбург стали стратегічними партнерами", "field_type": "LOCATION", "span_text": "Київ", "start_char": 0, "end_char": 4, "normalized_value": "Київ"}
+{"text_id": 4, "text": "Ціни на пальне можуть зрости до 50 грн/л.", "field_type": "AMOUNT", "span_text": "50 грн", "start_char": 32, "end_char": 38, "normalized_value": "50 UAH"}
+{"text_id": 5, "text": "Евакуаційний поїзд сьогодні прибув до Запоріжжя", "field_type": "LOCATION", "span_text": "Запоріжжя", "start_char": 38, "end_char": 47, "normalized_value": "Запоріжжя"}
+{"text_id": 6, "text": "Потяг №43 Київ - Івано-Франківськ курсує за графіком", "field_type": "LOCATION", "span_text": "Київ", "start_char": 10, "end_char": 14, "normalized_value": "Київ"}
+{"text_id": 7, "text": "Португалія надасть Україні до 250 млн. євро підтримки", "field_type": "AMOUNT", "span_text": "250 млн. євро", "start_char": 30, "end_char": 43, "normalized_value": "250 млн EUR"}
+{"text_id": 8, "text": "Бої з окупантами на трасі Лисичанськ - Бахмут", "field_type": "LOCATION", "span_text": "Бахмут", "start_char": 39, "end_char": 45, "normalized_value": "Бахмут"}
+{"text_id": 9, "text": "Росія кинула всі сили на Донбас і стала вразливою", "field_type": "LOCATION", "span_text": "Донбас", "start_char": 25, "end_char": 31, "normalized_value": "Донбас"}
+{"text_id": 10, "text": "Підписка на Telegram Premium - $5 (~ 150 грн) / місяць.", "field_type": "AMOUNT", "span_text": "150 грн", "start_char": 37, "end_char": 44, "normalized_value": "150 UAH"}
+{"text_id": 11, "text": "Зведення Генштабу ЗСУ станом на 11.11.2022.", "field_type": "DATE", "span_text": "11.11.2022", "start_char": 32, "end_char": 42, "normalized_value": "2022-11-11"}
+{"text_id": 12, "text": "Польща передасть 1 млрд доларів допомоги", "field_type": "AMOUNT", "span_text": "1 млрд доларів", "start_char": 17, "end_char": 31, "normalized_value": "1 млрд USD"}
+{"text_id": 13, "text": "Виділено пакет у розмірі 350 млн. доларів.", "field_type": "AMOUNT", "span_text": "350 млн. доларів", "start_char": 25, "end_char": 41, "normalized_value": "350 млн USD"}
+{"text_id": 14, "text": "Ворог готує наступ на Харків", "field_type": "LOCATION", "span_text": "Харків", "start_char": 22, "end_char": 28, "normalized_value": "Харків"}
+{"text_id": 15, "text": "ЄС погодив транш на 9 млрд євро", "field_type": "AMOUNT", "span_text": "9 млрд євро", "start_char": 20, "end_char": 31, "normalized_value": "9 млрд EUR"}
+{"text_id": 16, "text": "Україна поверне Крим без бою", "field_type": "LOCATION", "span_text": "Крим", "start_char": 16, "end_char": 20, "normalized_value": "Крим"}
+{"text_id": 17, "text": "У місті Одеса лунають вибухи", "field_type": "LOCATION", "span_text": "Одеса", "start_char": 8, "end_char": 13, "normalized_value": "Одеса"}
+{"text_id": 18, "text": "Вартість ремонту склала 10 тис дол", "field_type": "AMOUNT", "span_text": "10 тис дол", "start_char": 24, "end_char": 34, "normalized_value": "10 тис USD"}
+{"text_id": 19, "text": "Нові правила діють з 01.05.2023", "field_type": "DATE", "span_text": "01.05.2023", "start_char": 21, "end_char": 31, "normalized_value": "2023-05-01"}
+{"text_id": 20, "text": "Ракета влучила в будинок у Дніпрі", "field_type": "LOCATION", "span_text": "Дніпрі", "start_char": 27, "end_char": 33, "normalized_value": "Дніпро"}
+{"text_id": 21, "text": "Допомога у розмірі 500 євро", "field_type": "AMOUNT", "span_text": "500 євро", "start_char": 19, "end_char": 27, "normalized_value": "500 EUR"}
+{"text_id": 22, "text": "Ситуація біля міста Херсон складна", "field_type": "LOCATION", "span_text": "Херсон", "start_char": 20, "end_char": 26, "normalized_value": "Херсон"}
+{"text_id": 23, "text": "Окупанти обстріляли Миколаїв", "field_type": "LOCATION", "span_text": "Миколаїв", "start_char": 20, "end_char": 28, "normalized_value": "Миколаїв"}
+{"text_id": 24, "text": "Збитки оцінюють у 5 млрд гривень", "field_type": "AMOUNT", "span_text": "5 млрд гривень", "start_char": 18, "end_char": 32, "normalized_value": "5 млрд UAH"}
+{"text_id": 25, "text": "Зустріч запланована на 15.10.2024", "field_type": "DATE", "span_text": "15.10.2024", "start_char": 23, "end_char": 33, "normalized_value": "2024-10-15"}
+{"text_id": 26, "text": "У Львові пройшов благодійний концерт", "field_type": "LOCATION", "span_text": "Львові", "start_char": 2, "end_char": 8, "normalized_value": "Львів"}
+{"text_id": 27, "text": "Курс валют закріпився на рівні 40 грн", "field_type": "AMOUNT", "span_text": "40 грн", "start_char": 31, "end_char": 37, "normalized_value": "40 UAH"}
+{"text_id": 28, "text": "Ворог зосередив сили біля міста Луганськ", "field_type": "LOCATION", "span_text": "Луганськ", "start_char": 32, "end_char": 40, "normalized_value": "Луганськ"}
+{"text_id": 29, "text": "Ціна дрона становить 1000 $", "field_type": "AMOUNT", "span_text": "1000 $", "start_char": 21, "end_char": 27, "normalized_value": "1000 USD"}
+{"text_id": 30, "text": "Дедлайн подачі звіту 31.12.23", "field_type": "DATE", "span_text": "31.12.23", "start_char": 21, "end_char": 29, "normalized_value": "2023-12-31"}
