@@ -1,0 +1,12 @@
+{
+    "strategy": "stratified",
+    "seed": 42,
+    "stratify_col": "label",
+    "sizes": {
+        "train": 8587,
+        "val": 1074,
+        "test": 1074
+    },
+    "proportions": "80/10/10",
+    "generated_at": "2026-03-16T08:38:14.660433"
+}
