@@ -56,20 +56,26 @@ class ExtractorAgent:
         return json.loads(response.choices[0].message.content)
 
 class ReviewerAgent:
-    def __init__(self, client, model="llama3-8b-8192"):
+    def __init__(self, client, model="llama-3.1-8b-instant"):
         self.client = client
         self.model = model
-        self.system_prompt = """Ти - Reviewer. Перевір JSON, згенерований Extractor.
-        Шукай галюцинації (вигадані джерела) або пропущені маркери. 
-        Якщо є проблеми, verdict має бути 'repair_needed'. Якщо все ідеально - 'accept'.
+        self.system_prompt = """Ти - неупереджений Редактор-Аудитор. Твоє завдання: порівняти оригінальний текст та JSON від Extractor.
+        ПРАВИЛА:
+        1. НЕ ВИГАДУЙ ПОМИЛОК. Якщо Extractor чесно витягнув те, що є в тексті - це 'accept'.
+        2. Якщо в тексті немає джерел, і Extractor залишив масив порожнім [] - це ПРАВИЛЬНО ('accept').
+        3. 'repair_needed' став ТІЛЬКИ тоді, коли Extractor додав слово/джерело, якого ФІЗИЧНО немає в оригінальному тексті.
+        4. Ти не оцінюєш правдивість самої новини, ти оцінюєш лише якість екстракції.
+        
         ОБОВ'ЯЗКОВО ПОВЕРНИ ВІДПОВІДЬ У ФОРМАТІ JSON:
         {
             "verdict": "accept|repair_needed|manual_review",
             "valid_json": true,
             "consistency_ok": boolean,
-            "issues": [{"field": "назва поля", "problem": "опис"}],
+            "issues": [{"field": "назва поля", "problem": "опис реальної помилки"}],
             "recommended_action": "string"
         }"""
+
+    # ... метод run залишається без змін
 
     def run(self, text: str, extracted_data: dict) -> dict:
         prompt = f"Оригінальний текст:\n{text}\n\nЗгенерований JSON:\n{json.dumps(extracted_data, ensure_ascii=False)}"
