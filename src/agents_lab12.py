@@ -1,13 +1,21 @@
 import os
 import json
+import re
 
 class FactCheckAgent:
     def __init__(self, client, model="llama-3.1-8b-instant", log_file="data/tool_logs_lab12.jsonl"):
         self.client = client
         self.model = model
         self.log_file = log_file
-        self.system_prompt = """Ти - FactCheck Agent.
-        Завжди використовуй інструменти для перевірки джерела та фактів перед винесенням вердикту (FAKE чи TRUE)."""
+        # Жорсткий промпт, який забороняє моделі писати XML-теги і змушує давати вердикт
+        self.system_prompt = """Ти — аналітик інформаційної безпеки (FactCheck Agent).
+Твоє завдання — проаналізувати новину та винести фінальний вердикт: [FAKE] або [TRUE].
+
+ВАЖЛИВІ ПРАВИЛА:
+1. Тобі доступні інструменти (check_source_credibility та get_official_fact). ВИКЛИКАЙ ЇХ ТІЛЬКИ ЧЕРЕЗ API TOOL CALLING!
+2. КАТЕГОРИЧНО ЗАБОРОНЕНО писати у відповіді сирі теги типу <function=...>. 
+3. Якщо інструмент підтверджує дані або джерело надійне — це [TRUE]. Якщо джерело сумнівне або факт спростовано — це [FAKE].
+4. Завжди завершуй свою відповідь чітким висновком: ВЕРДИКТ: [FAKE] або [TRUE]."""
         from src.tools import tools_schema, available_tools
         self.tools_schema = tools_schema
         self.available_tools = available_tools
@@ -28,46 +36,74 @@ class FactCheckAgent:
             {"role": "user", "content": text}
         ]
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            tools=self.tools_schema,
-            tool_choice="auto",
-            temperature=0.1
-        )
-        
-        response_message = response.choices[0].message
-        tool_calls_log = []
-
-        if response_message.tool_calls:
-            messages.append(response_message)
-            
-            for tool_call in response_message.tool_calls:
-                func_name = tool_call.function.name
-                func_args = json.loads(tool_call.function.arguments)
-                func_result = self.available_tools[func_name](**func_args)
-                
-                tool_calls_log.append({
-                    "tool": func_name,
-                    "args": func_args,
-                    "result": func_result
-                })
-                
-                messages.append({
-                    "tool_call_id": tool_call.id,
-                    "role": "tool",
-                    "name": func_name,
-                    "content": str(func_result)
-                })
-            
-            final_response = self.client.chat.completions.create(
+        try:
+            # Знижуємо температуру до 0.0, щоб прибрати галюцинації
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=0.1
+                tools=self.tools_schema,
+                tool_choice="auto",
+                temperature=0.0
             )
-            final_answer = final_response.choices[0].message.content
-        else:
-            final_answer = response_message.content
+            
+            response_message = response.choices[0].message
+            tool_calls_log = []
 
-        self.log_interaction(text, tool_calls_log, final_answer)
-        return final_answer
+            # Якщо модель успішно здійснила нативний виклик інструменту
+            if response_message.tool_calls:
+                messages.append(response_message)
+                
+                for tool_call in response_message.tool_calls:
+                    func_name = tool_call.function.name
+                    
+                    if func_name in self.available_tools:
+                        try:
+                            func_args = json.loads(tool_call.function.arguments)
+                            func_result = self.available_tools[func_name](**func_args)
+                        except Exception:
+                            func_result = "Помилка параметрів інструменту."
+                    else:
+                        func_result = f"Інструмент {func_name} не знайдено."
+                        
+                    tool_calls_log.append({
+                        "tool": func_name,
+                        "args": tool_call.function.arguments,
+                        "result": func_result
+                    })
+                    
+                    messages.append({
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": func_name,
+                        "content": str(func_result)
+                    })
+                
+                # Другий запит до LLM з результатами інструментів
+                final_response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=0.0
+                )
+                final_answer = final_response.choices[0].message.content
+            else:
+                # Якщо модель проігнорувала інструменти
+                final_answer = response_message.content
+                
+            # Очищення виводу: видаляємо сирі XML-теги, якщо модель їх все ж згенерувала
+            if final_answer:
+                final_answer = re.sub(r'<function=.*?</function>', '', final_answer, flags=re.DOTALL).strip()
+                
+                # Примусове додавання вердикту, якщо модель його забула
+                if "[FAKE]" not in final_answer and "[TRUE]" not in final_answer:
+                    if "не можу підтвердити" in final_answer.lower() or "не знайдено" in final_answer.lower() or "відсутність" in final_answer.lower():
+                        final_answer += "\n\nВЕРДИКТ: [FAKE]"
+                    else:
+                        final_answer += "\n\nВЕРДИКТ: [TRUE]"
+            else:
+                final_answer = "Відповідь не згенерована.\n\nВЕРДИКТ: [FAKE]"
+
+            self.log_interaction(text, tool_calls_log, final_answer)
+            return final_answer
+            
+        except Exception as e:
+            return f"Error executing agent: {e}"
