@@ -8,18 +8,18 @@ class FactCheckAgent:
         self.model = model
         self.log_file = log_file
         
-        # Оновлений промпт з чіткою логікою для офіційних джерел
-        self.system_prompt = """Ти — аналітик інформаційної безпеки (FactCheck Agent).
-Твоє завдання — проаналізувати новину та винести фінальний вердикт: [FAKE] або [TRUE].
+        # Мінімалістичний промпт без згадок про "теги". Чітка логіка.
+        self.system_prompt = """Ти — суворий аналітик інформаційної безпеки.
+Твоє завдання — перевірити новину за допомогою доступних інструментів і винести вердикт.
 
-ЛОГІКА ПРИЙНЯТТЯ РІШЕНЬ:
-- Якщо джерело "Офіційне, надійне" (наприклад, ГШ ЗСУ, Міністерство оборони, Офіційно) -> ВЕРДИКТ: [TRUE], навіть якщо точних даних у базі фактів немає.
-- Якщо джерело "російська пропаганда", "анонімний телеграм" або факт прямо спростовано -> ВЕРДИКТ: [FAKE].
+ПРАВИЛА ПРИЙНЯТТЯ РІШЕНЬ (ПРЕЗУМПЦІЯ ФЕЙКУ):
+1. Якщо джерело "Офіційне, надійне" (ГШ ЗСУ, Міноборони, Офіційно) -> ВЕРДИКТ: [TRUE].
+2. Якщо джерело російська пропаганда ("риа новости") -> ВЕРДИКТ: [FAKE].
+3. Якщо джерело ненадійне або маніпулятивне ("анонімний телеграм", "труха", "влада приховує") -> ВЕРДИКТ: [FAKE].
+4. Якщо немає надійного джерела і немає офіційних даних -> ВЕРДИКТ: [FAKE].
 
-ВАЖЛИВІ ПРАВИЛА:
-1. ВИКЛИКАЙ ІНСТРУМЕНТИ ТІЛЬКИ ЧЕРЕЗ API TOOL CALLING.
-2. КАТЕГОРИЧНО ЗАБОРОНЕНО писати у відповіді сирі теги типу <function=...>.
-3. Завжди завершуй свою відповідь чітко: ВЕРДИКТ: [FAKE] або ВЕРДИКТ: [TRUE]."""
+Твоя відповідь має містити короткий висновок і ОБОВ'ЯЗКОВО закінчуватися рядком:
+ВЕРДИКТ: [TRUE] або ВЕРДИКТ: [FAKE]"""
         
         from src.tools import tools_schema, available_tools
         self.tools_schema = tools_schema
@@ -41,18 +41,20 @@ class FactCheckAgent:
             {"role": "user", "content": text}
         ]
 
+        tool_calls_log = []
+        final_answer = "ВЕРДИКТ: [FAKE]" # Дефолтне значення на випадок збою
+
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 tools=self.tools_schema,
                 tool_choice="auto",
-                parallel_tool_calls=False,  # ВАЖЛИВО: Вимикаємо паралельні виклики для стабільності Groq
+                parallel_tool_calls=False,
                 temperature=0.0
             )
             
             response_message = response.choices[0].message
-            tool_calls_log = []
 
             if response_message.tool_calls:
                 messages.append(response_message)
@@ -91,20 +93,19 @@ class FactCheckAgent:
             else:
                 final_answer = response_message.content
                 
-            if final_answer:
-                final_answer = re.sub(r'<function=.*?</function>', '', final_answer, flags=re.DOTALL).strip()
-                
-                # Запобіжник, щоб гарантувати правильний формат маркування
-                if "[FAKE]" not in final_answer and "[TRUE]" not in final_answer:
-                    if "не можу підтвердити" in final_answer.lower() or "фейк" in final_answer.lower():
-                        final_answer += "\n\nВЕРДИКТ: [FAKE]"
-                    else:
-                        final_answer += "\n\nВЕРДИКТ: [TRUE]"
-            else:
-                final_answer = "Відповідь не згенерована.\n\nВЕРДИКТ: [FAKE]"
-
-            self.log_interaction(text, tool_calls_log, final_answer)
-            return final_answer
-            
         except Exception as e:
-            return f"Error executing agent: {e}"
+            # Запобіжник від крашу API Groq (якщо модель знову зламає теги)
+            err_msg = str(e)
+            if "tool_use_failed" in err_msg:
+                final_answer = "Модель виконала виклик інструменту з порушенням синтаксису API.\n\nВЕРДИКТ: [FAKE]"
+            else:
+                final_answer = f"API Error: {err_msg}\n\nВЕРДИКТ: [FAKE]"
+
+        # Фінальне очищення
+        if final_answer:
+            final_answer = re.sub(r'<function=.*?</function>', '', final_answer, flags=re.DOTALL).strip()
+            if "[FAKE]" not in final_answer and "[TRUE]" not in final_answer:
+                final_answer += "\n\nВЕРДИКТ: [FAKE]"
+                
+        self.log_interaction(text, tool_calls_log, final_answer)
+        return final_answer
