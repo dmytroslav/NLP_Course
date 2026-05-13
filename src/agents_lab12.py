@@ -1,7 +1,8 @@
 import os
+import json
 
 class FactCheckAgent:
-    def __init__(self, client, model="llama3-8b-8192", log_file="data/tool_logs_lab12.jsonl"):
+    def __init__(self, client, model="llama-3.1-8b-instant", log_file="data/tool_logs_lab12.jsonl"):
         self.client = client
         self.model = model
         self.log_file = log_file
