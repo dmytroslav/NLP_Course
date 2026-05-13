@@ -7,15 +7,20 @@ class FactCheckAgent:
         self.client = client
         self.model = model
         self.log_file = log_file
-        # Жорсткий промпт, який забороняє моделі писати XML-теги і змушує давати вердикт
+        
+        # Оновлений промпт з чіткою логікою для офіційних джерел
         self.system_prompt = """Ти — аналітик інформаційної безпеки (FactCheck Agent).
 Твоє завдання — проаналізувати новину та винести фінальний вердикт: [FAKE] або [TRUE].
 
+ЛОГІКА ПРИЙНЯТТЯ РІШЕНЬ:
+- Якщо джерело "Офіційне, надійне" (наприклад, ГШ ЗСУ, Міністерство оборони, Офіційно) -> ВЕРДИКТ: [TRUE], навіть якщо точних даних у базі фактів немає.
+- Якщо джерело "російська пропаганда", "анонімний телеграм" або факт прямо спростовано -> ВЕРДИКТ: [FAKE].
+
 ВАЖЛИВІ ПРАВИЛА:
-1. Тобі доступні інструменти (check_source_credibility та get_official_fact). ВИКЛИКАЙ ЇХ ТІЛЬКИ ЧЕРЕЗ API TOOL CALLING!
-2. КАТЕГОРИЧНО ЗАБОРОНЕНО писати у відповіді сирі теги типу <function=...>. 
-3. Якщо інструмент підтверджує дані або джерело надійне — це [TRUE]. Якщо джерело сумнівне або факт спростовано — це [FAKE].
-4. Завжди завершуй свою відповідь чітким висновком: ВЕРДИКТ: [FAKE] або [TRUE]."""
+1. ВИКЛИКАЙ ІНСТРУМЕНТИ ТІЛЬКИ ЧЕРЕЗ API TOOL CALLING.
+2. КАТЕГОРИЧНО ЗАБОРОНЕНО писати у відповіді сирі теги типу <function=...>.
+3. Завжди завершуй свою відповідь чітко: ВЕРДИКТ: [FAKE] або ВЕРДИКТ: [TRUE]."""
+        
         from src.tools import tools_schema, available_tools
         self.tools_schema = tools_schema
         self.available_tools = available_tools
@@ -37,19 +42,18 @@ class FactCheckAgent:
         ]
 
         try:
-            # Знижуємо температуру до 0.0, щоб прибрати галюцинації
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 tools=self.tools_schema,
                 tool_choice="auto",
+                parallel_tool_calls=False,  # ВАЖЛИВО: Вимикаємо паралельні виклики для стабільності Groq
                 temperature=0.0
             )
             
             response_message = response.choices[0].message
             tool_calls_log = []
 
-            # Якщо модель успішно здійснила нативний виклик інструменту
             if response_message.tool_calls:
                 messages.append(response_message)
                 
@@ -78,7 +82,6 @@ class FactCheckAgent:
                         "content": str(func_result)
                     })
                 
-                # Другий запит до LLM з результатами інструментів
                 final_response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
@@ -86,16 +89,14 @@ class FactCheckAgent:
                 )
                 final_answer = final_response.choices[0].message.content
             else:
-                # Якщо модель проігнорувала інструменти
                 final_answer = response_message.content
                 
-            # Очищення виводу: видаляємо сирі XML-теги, якщо модель їх все ж згенерувала
             if final_answer:
                 final_answer = re.sub(r'<function=.*?</function>', '', final_answer, flags=re.DOTALL).strip()
                 
-                # Примусове додавання вердикту, якщо модель його забула
+                # Запобіжник, щоб гарантувати правильний формат маркування
                 if "[FAKE]" not in final_answer and "[TRUE]" not in final_answer:
-                    if "не можу підтвердити" in final_answer.lower() or "не знайдено" in final_answer.lower() or "відсутність" in final_answer.lower():
+                    if "не можу підтвердити" in final_answer.lower() or "фейк" in final_answer.lower():
                         final_answer += "\n\nВЕРДИКТ: [FAKE]"
                     else:
                         final_answer += "\n\nВЕРДИКТ: [TRUE]"
