@@ -112,3 +112,11 @@
 - **Tools:** Використовувалися `check_source_credibility` та `get_official_fact`, які імітували звернення до бази РНБО або фактчекерів.
 - **Noisy / ambiguous cases:** Були присутні (наприклад, повідомлення з суперечливими джерелами).
 - **Результат:** Tool-grounded підхід критично допоміг усунути галюцинації моделі щодо репутації джерел (особливо російської пропаганди).
+
+## Lab 14 Flow Testing
+* **Use case:** Stateful flow для фактчекінгу (Ingest -> Route -> Execute -> Validate -> Export).
+* **Input types:** 10 синтетичних кейсів (офіційні новини, маніпуляції, спам, очевидні фейки).
+* **Routes:** `analyze_news` (перевірка фактів) та `skip` (ігнорування).
+* **Knowledge resources:** Жорстко задана `NEWS_SCHEMA` (jsonschema) у Validator.
+* **Fallback events:** У тестовій вибірці Fallback не знадобився завдяки високій якості Llama 3.1 8B, але логіка готова обробляти `ValidationError`.
+* **Impact:** Stateful flow повністю усунув проблему парсингу нестандартних відповідей від LLM та забезпечив 100% стабільність експорту.
