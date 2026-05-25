@@ -20,7 +20,7 @@
 
 ## Інструкція із запуску (Colab / Local)
 1. Склонуйте цей репозиторій:
-   `git clone [URL_вашого_репозиторію]`
+   `git clone (https://github.com/dmytroslav/NLP_Course.git)`
 2. Встановіть залежності:
    `pip install -r requirements.txt`
 3. Завантажте українську мовну модель для spaCy:
