@@ -2,3 +2,5 @@ spacy>=3.7.0
 pandas>=2.0.0
 groq
 jsonschema
+scikit-learn
+ipywidgets
